@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for EC2 and RDS instances with security groups'
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: "System Configuration"
+        Parameters:
+          - Environment
+          - SystemName
+      - Label:
+          default: "EC2 Configuration"
+        Parameters:
+          - EC2PublicSubnet
+          - EC2ImageId
+          - KeyName
+
+# ------------------------------------------------------------#
+# Input Parameters
+# ------------------------------------------------------------#
+Parameters:
+  # System Config
+  Environment:
+    Default: dev
+    Type: String
+  SystemName:
+    Default: rds
+    Type: String
+
+  # EC2
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+  EC2PublicSubnet:
+    Description: "EC2 Public Subnet"
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-publicId"
+  KeyName:
+    Description: "Key Name"
+    Type: AWS::EC2::KeyPair::KeyName
+
+  # Security Group
+  VpcId:
+    Description: "VPC ID"
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-"
+  SourceIpAddress:
+    Description: 'IP address to allow SSH access to the EC2 instance'
+    Type: String
+    Default: "99.99.99.99/32"
+
+Resources:
+  # ------------------------------------------------------------#
+  # EC2
+  # ------------------------------------------------------------#
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${SystemName}-${Environment}-ec2-sg"
+      VpcId: !Ref VpcId
+      GroupDescription: 'EC2 security group for SSH access'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SourceIpAddress
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref SourceIpAddress
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-ec2-bastion-sg"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      ImageId: !Ref EC2ImageId
+      NetworkInterfaces:
+        - DeviceIndex: 0
+          SubnetId: !Ref EC2PublicSubnet
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          AssociatePublicIpAddress: true
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          sudo yum update -y rpm
+          sudo amazon-linux-extras install -y nginx1
+          sudo systemctl start nginx
+          sudo systemctl enable nginx
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-ec2-bastion"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  ElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref EC2Instance
+      Domain: vpc
