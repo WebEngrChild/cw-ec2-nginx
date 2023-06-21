@@ -1,3 +1,10 @@
+
+## キーペア作成
+
+- AWSコンソール > EC2 > キーペア > キーペアを作成
+- ダウンロードされた`.pem`ファイルを指定ディレクトリに格納
+
 ```
-$ git commit --allow-empty -m "deploy: 実行"
+$ mv ~/Downloads/db-access-key.pem ~/.ssh
+$ chmod 400 ~/.ssh/db-access-key.pem
 ```
