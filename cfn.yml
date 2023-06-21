@@ -74,7 +74,6 @@ Resources:
         - Key: Environment
           Value: !Sub "${Environment}"
 
-
   # ------------------------------------------------------------#
   #  Internet Gateway
   # ------------------------------------------------------------#
@@ -145,6 +144,7 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicRouteTable1
       SubnetId: !Ref PublicSubnet1
+
   # ------------------------------------------------------------#
   # EC2
   # ------------------------------------------------------------#
