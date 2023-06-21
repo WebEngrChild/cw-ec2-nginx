@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for VPC and ECS instances with security groups'
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: "System Configuration"
+        Parameters:
+          - Environment
+          - SystemName
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - CIDR
+          - AvailabilityZone1
+          - PublicSubnet1CIDR
+      - Label:
+          default: "EC2 Configuration"
+        Parameters:
+          - EC2ImageId
+          - KeyName
+          - SourceIpAddress
+
+# ------------------------------------------------------------#
+# Input Parameters
+# ------------------------------------------------------------#
+Parameters:
+  # System Config
+  Environment:
+    Default: dev
+    Type: String
+  SystemName:
+    Default: rds
+    Type: String
+  # VPC
+  CIDR:
+    Type: String
+    Default: "10.10.0.0/16"
+  AvailabilityZone1:
+    Type: String
+    Default: "ap-northeast-1a"
+  PublicSubnet1CIDR:
+    Type: String
+    Default: "10.10.0.0/24"
+  # EC2
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+  KeyName:
+    Description: "Key Name"
+    Type: AWS::EC2::KeyPair::KeyName
+  SourceIpAddress:
+    Description: 'IP address to allow SSH access to the EC2 instance'
+    Type: String
+    Default: "99.99.99.99/32"
+
+Resources:
+  # ------------------------------------------------------------#
+  #  VPC
+  # ------------------------------------------------------------#
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CIDR
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-vpc"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+
+  # ------------------------------------------------------------#
+  #  Internet Gateway
+  # ------------------------------------------------------------#
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-igw"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref IGW
+
+  # ------------------------------------------------------------#
+  #  PublicSubnet
+  # ------------------------------------------------------------#
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet1CIDR
+      AvailabilityZone: !Ref AvailabilityZone1
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-public-subnet-1"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  # ------------------------------------------------------------#
+  #  Public RouteTable
+  # ------------------------------------------------------------#
+  PublicRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-public-rt-1"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  # ------------------------------------------------------------#
+  #  Public Routing
+  # ------------------------------------------------------------#
+  PublicRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable1
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref IGW
+
+  # ------------------------------------------------------------#
+  #  Public RouteTable Association
+  # ------------------------------------------------------------#
+  PublicSubnetAttach1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable1
+      SubnetId: !Ref PublicSubnet1
+  # ------------------------------------------------------------#
+  # EC2
+  # ------------------------------------------------------------#
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${SystemName}-${Environment}-ec2-sg"
+      VpcId: !Ref VPC
+      GroupDescription: 'EC2 security group for SSH access'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SourceIpAddress
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref SourceIpAddress
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-ec2-bastion-sg"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      ImageId: !Ref EC2ImageId
+      NetworkInterfaces:
+        - DeviceIndex: 0
+          SubnetId: !Ref PublicSubnet1
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          AssociatePublicIpAddress: true
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          sudo yum update -y rpm
+          sudo amazon-linux-extras install -y nginx1
+          sudo systemctl start nginx
+          sudo systemctl enable nginx
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-${Environment}-ec2-bastion"
+        - Key: SystemName
+          Value: !Sub "${SystemName}"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  ElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref EC2Instance
+      Domain: vpc
