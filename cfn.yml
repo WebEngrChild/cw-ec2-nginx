@@ -31,7 +31,7 @@ Parameters:
     Default: dev
     Type: String
   SystemName:
-    Default: rds
+    Default: ec2
     Type: String
   # VPC
   CIDR:
