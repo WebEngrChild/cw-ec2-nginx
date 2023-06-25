@@ -1,3 +1,4 @@
+# 初期設定
 
 ## キーペア作成
 
@@ -16,3 +17,6 @@ $ chmod 400 ~/.ssh/db-access-key.pem
 ```shell
 $ aws ssm put-parameter --name "/config/cw-agent" --type "String" --value "$(cat cw-agent.json)"
 ```
+
+## Cloud Formationのスタックをアップロード
+
