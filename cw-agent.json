@@ -3,7 +3,7 @@
     "run_as_user": "cwagent"
   },
   "metrics": {
-    "namespace": "test-instance",
+    "namespace": "sample-ec2-instance",
     "metrics_collected": {
       "mem": {
         "measurement": [
