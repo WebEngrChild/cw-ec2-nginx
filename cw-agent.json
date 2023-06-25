@@ -9,6 +9,9 @@
         "measurement": [
           "mem_used_percent"
         ],
+        "dimensions": {
+          "InstanceId": "${aws:InstanceId}"
+        },
         "metrics_collection_interval": 60
       }
     }
