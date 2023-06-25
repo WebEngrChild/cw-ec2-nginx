@@ -197,8 +197,6 @@ Resources:
           sudo amazon-linux-extras install -y nginx1
           sudo systemctl start nginx
           sudo systemctl enable nginx
-          sudo yum install -y amazon-cloudwatch-agent
-          sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/config/cw-agent -s
       Tags:
         - Key: Name
           Value: !Sub "${SystemName}-${Environment}-ec2-bastion"
