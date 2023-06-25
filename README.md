@@ -6,8 +6,14 @@
 - ダウンロードされた`.pem`ファイルを指定ディレクトリに格納
 
 ```shell
-$ mv ~/Downloads/db-access-key.pem ~/.ssh
-$ chmod 400 ~/.ssh/db-access-key.pem
+$ mv ~/Downloads/access-key.pem ~/.ssh
+$ chmod 400 ~/.ssh/access-key.pem
+```
+
+## EC2にssh接続
+
+```shell
+ssh -i ~/.ssh/access-key.pem ec2-user@<EC2のIPアドレスまたはホスト名>
 ```
 
 ## パラメーターストアにAWS Cloud Watch設定ファイルをアップロード
