@@ -4,13 +4,13 @@ Resources:
   # Amazon Athenaで実行したクエリ結果を保管する先
   AthenaQueryBucket:
     Properties:
-      BucketName: 'athena-query-bucket'
+      BucketName: 'athena-query-bucket-sample'
     Type: 'AWS::S3::Bucket'
 
   # Kinesis Data Firehoseの配信ストリーム送信先
   KinesisDataBucket:
     Properties:
-      BucketName: 'kinesis-data-bucket'
+      BucketName: 'kinesis-data-bucket-sample'
     Type: 'AWS::S3::Bucket'
 
   LogsRole:
