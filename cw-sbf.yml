@@ -1,7 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Resources:
-  MyS3Bucket:
+  AthenaQueryBucket:
+    Type: 'AWS::S3::Bucket'
+
+  KinesisDataBucket:
     Type: 'AWS::S3::Bucket'
 
   LogsRole:
