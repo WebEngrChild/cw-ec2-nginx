@@ -1,10 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Resources:
+  # Amazon Athenaで実行したクエリ結果を保管する先
   AthenaQueryBucket:
+    Properties:
+      BucketName: 'athena-query-bucket'
     Type: 'AWS::S3::Bucket'
 
+  # Kinesis Data Firehoseの配信ストリーム送信先
   KinesisDataBucket:
+    Properties:
+      BucketName: 'kinesis-data-bucket'
     Type: 'AWS::S3::Bucket'
 
   LogsRole:
