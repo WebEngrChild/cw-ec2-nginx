@@ -34,7 +34,8 @@ $ aws cloudformation create-stack \
     --capabilities CAPABILITY_IAM
 ```
 
-最後のIPアドレスの箇所は適宜ご自身の環境のグローバルIPを指定してください。
+最後のIPアドレスの箇所は以下を参考に適宜ご自身の環境のグローバルIPを指定してください。
+https://www.cman.jp/network/support/go_access.cgi
 
 ## STEP:4 Cloud Watch Agentのインストール
 
