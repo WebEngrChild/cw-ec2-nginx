@@ -30,7 +30,7 @@ AWS Systems Manager > パラメータストア > `/config/cw-agent` > 概要
 $ aws cloudformation create-stack \
     --stack-name cw-ec2-nginx \
     --template-body file://cfn.yml \
-    --parameters ParameterKey=KeyName,ParameterValue=access-key \
+    --parameters ParameterKey=KeyName,ParameterValue=access-key ParameterKey=SourceIpAddress,ParameterValue="0.0.0.0/0" \
     --capabilities CAPABILITY_IAM
 ```
 
