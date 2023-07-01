@@ -34,6 +34,8 @@ $ aws cloudformation create-stack \
     --capabilities CAPABILITY_IAM
 ```
 
+最後のIPアドレスの箇所は適宜ご自身の環境のグローバルIPを指定してください。
+
 ## STEP:4 Cloud Watch Agentのインストール
 
 マネージメントコンソール > EC2 > > IPアドレスをコピー
