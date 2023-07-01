@@ -3,15 +3,20 @@
     "run_as_user": "cwagent"
   },
   "metrics": {
+    "aggregation_dimensions": [
+      [
+        "InstanceId"
+      ]
+    ],
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
     "namespace": "ec2-instance",
     "metrics_collected": {
       "mem": {
         "measurement": [
           "mem_used_percent"
         ],
-        "dimensions": {
-          "InstanceId": "${aws:InstanceId}"
-        },
         "metrics_collection_interval": 60
       }
     }
