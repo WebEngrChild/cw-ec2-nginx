@@ -19,8 +19,13 @@ $ aws ssm put-parameter --name "/config/cw-agent" --type "String" --value "$(cat
 ```
 
 ## STEP:3 Cloud Formationのスタックをアップロード
-
-AWSコンソール > CloudFormation > スタック > スタックの作成
+```shell
+$ aws cloudformation create-stack \
+    --stack-name cw-ec2-nginx \
+    --template-body file://cfn.yml \
+    --parameters ParameterKey=KeyName,ParameterValue=access-key \
+    --capabilities CAPABILITY_IAM
+```
 
 ## STEP:4 Cloud Watch Agentのインストール
 
@@ -28,4 +33,10 @@ AWSコンソール > CloudFormation > スタック > スタックの作成
 $ ssh -i ~/.ssh/access-key.pem ec2-user@<EC2のIPアドレスまたはホスト名>
 $ sudo yum install -y amazon-cloudwatch-agent
 $ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/config/cw-agent -s
+```
+
+## STEP:5 スタック削除
+
+```shell
+$ aws cloudformation delete-stack --stack-name cw-ec2-nginx
 ```
