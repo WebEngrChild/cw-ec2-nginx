@@ -35,6 +35,12 @@ $ sudo yum install -y amazon-cloudwatch-agent
 $ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/config/cw-agent -s
 ```
 
+AWS Systems Manager > パラメータストア > `/config/cw-agent` > 概要
+
+設定ファイルが格納されていることを確認します。
+
+![スクリーンショット 2023-07-01 11 10 51](https://github.com/WebEngrChild/cw-ec2-nginx/assets/87892265/5710945a-d1cf-41f6-a54a-b63d43933df1)
+
 ## STEP:5 スタック削除
 
 ```shell
