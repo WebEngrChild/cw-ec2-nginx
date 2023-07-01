@@ -6,8 +6,8 @@
 - ダウンロードされた`.pem`ファイルを指定ディレクトリに格納
 
 ```shell
-$ mv ~/Downloads/access-key.pem ~/.ssh
-$ chmod 400 ~/.ssh/access-key.pem
+mv ~/Downloads/access-key.pem ~/.ssh
+chmod 400 ~/.ssh/access-key.pem
 ```
 
 ## STEP:2 パラメーターストアにAWS Cloud Watch設定ファイルをアップロード
@@ -15,7 +15,7 @@ $ chmod 400 ~/.ssh/access-key.pem
 cloudformationのスタックをアップロードする前に実施してください。
 
 ```shell
-$ aws ssm put-parameter --name "/config/cw-agent" --type "String" --value "$(cat cw-agent.json)"
+aws ssm put-parameter --name "/config/cw-agent" --type "String" --value "$(cat cw-agent.json)"
 ```
 
 AWS Systems Manager > パラメータストア > `/config/cw-agent` > 概要
@@ -27,7 +27,7 @@ AWS Systems Manager > パラメータストア > `/config/cw-agent` > 概要
 
 ## STEP:3 Cloud Formationのスタックをアップロード
 ```shell
-$ aws cloudformation create-stack \
+aws cloudformation create-stack \
     --stack-name cw-ec2-nginx \
     --template-body file://cfn.yml \
     --parameters ParameterKey=KeyName,ParameterValue=access-key ParameterKey=SourceIpAddress,ParameterValue="0.0.0.0/32" \
@@ -42,13 +42,13 @@ https://www.cman.jp/network/support/go_access.cgi
 マネージメントコンソール > EC2 > > IPアドレスをコピー
 
 ```shell
-$ ssh -i ~/.ssh/access-key.pem ec2-user@<上記で取得したEC2のIPアドレス>
-$ sudo yum install -y amazon-cloudwatch-agent
-$ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/config/cw-agent -s
+ssh -i ~/.ssh/access-key.pem ec2-user@<上記で取得したEC2のIPアドレス>
+sudo yum install -y amazon-cloudwatch-agent
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/config/cw-agent -s
 ```
 
 ## STEP:5 スタック削除
 
 ```shell
-$ aws cloudformation delete-stack --stack-name cw-ec2-nginx
+aws cloudformation delete-stack --stack-name cw-ec2-nginx
 ```
